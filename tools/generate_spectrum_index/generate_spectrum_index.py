@@ -22,8 +22,9 @@ def main():
 
     input = Path(args.input_spectrum)
 
-    input_filetype = '.'.join(input.suffixes)
+    input_filetype = ''.join(input.suffixes)
 
+    print(input_filetype)
     output = Path(args.output_folder).joinpath(input.name.replace(input_filetype, '.scans'))
 
     # List of output spectra
@@ -55,7 +56,7 @@ def main():
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mzML.gz':
         with gzip.open(input, 'rb') as mzmlgz_file:
-            with mzml.read(mzml_file) as reader:
+            with mzml.read(mzmlgz_file) as reader:
                 for s in reader:
                     # Always use given nativeID for mzML
                     spectra.append(Spectrum(s['id'],s['ms level'],-1 if s['ms level'] == 1 else ms2plus_scan_idx))
