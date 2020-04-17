@@ -41,27 +41,27 @@ def main():
             with mzxml.read(mzxml_file) as reader:
                 for s in reader:
                     # Always use scan= for nativeID for mzXML
-                    spectra.append(Spectrum('scan={}'.format(s['num']),s['msLevel'],-1 if s['msLevel'] == 1 else ms2plus_scan_idx))
+                    spectra.append(Spectrum('scan={}'.format(s['num']),int(s['msLevel']),-1 if int(s['msLevel']) == 1 else ms2plus_scan_idx))
                     # Increment MS2+ counter, if spectrum was MS2+
-                    if s['msLevel'] > 1:
+                    if int(s['msLevel']) > 1:
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mzML':
         with open(input, 'rb') as mzml_file:
             with mzml.read(mzml_file) as reader:
                 for s in reader:
                     # Always use given nativeID for mzML
-                    spectra.append(Spectrum(s['id'],s['ms level'],-1 if s['ms level'] == 1 else ms2plus_scan_idx))
+                    spectra.append(Spectrum(s['id'],int(s['ms level']),-1 if int(s['ms level']) == 1 else ms2plus_scan_idx))
                     # Increment MS2+ counter, if spectrum was MS2+
-                    if s['ms level'] > 1:
+                    if int(s['ms level']) > 1:
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mzML.gz':
         with gzip.open(input, 'rb') as mzmlgz_file:
             with mzml.read(mzmlgz_file) as reader:
                 for s in reader:
                     # Always use given nativeID for mzML
-                    spectra.append(Spectrum(s['id'],s['ms level'],-1 if s['ms level'] == 1 else ms2plus_scan_idx))
+                    spectra.append(Spectrum(s['id'],int(s['ms level']),-1 if int(s['ms level']) == 1 else ms2plus_scan_idx))
                     # Increment MS2+ counter, if spectrum was MS2+
-                    if s['ms level'] > 1:
+                    if int(s['ms level']) > 1:
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mgf':
         all_scan_idx = 0
@@ -69,7 +69,7 @@ def main():
             with mgf.read(mgf_file) as reader:
                 for s in reader:
                     # Check for MSLEVEL but assume 2
-                    ms_level = s['params'].get('mslevel', 2)
+                    ms_level = int(s['params'].get('mslevel', 2))
 
                     scan_num = s['params'].get('scans')
                     if scan_num:
