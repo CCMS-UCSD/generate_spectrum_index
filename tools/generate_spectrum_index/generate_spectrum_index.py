@@ -1,10 +1,12 @@
-from pyteomics import mzxml, mzml, mgf
 from collections import namedtuple
 import csv
 import argparse
 import sys
 from pathlib import Path
 import gzip
+import os
+from pyteomics import mzxml, mzml, mgf
+import pyteomics
 
 Spectrum = namedtuple('Spectrum', 'nativeid mslevel ms2plusindex')
 
@@ -36,18 +38,22 @@ def main():
     # In the highly unlikely chance that there are MS1 scans in the MGF set warning flag
     mgf_ms1_warn = False
 
+    skipped_ms2s = 0
+
     if input_filetype == '.mzXML':
         with open(input, 'rb') as mzxml_file:
-            with mzxml.read(mzxml_file) as reader:
-                for s in reader:
-                    # Always use scan= for nativeID for mzXML
+            for s in mzxml.MzXML(mzxml_file, decode_binary = False).iterfind(path='scan=*'):
+                # Always use scan= for nativeID for mzXML
+                try:
                     spectra.append(Spectrum('scan={}'.format(s['num']),int(s['msLevel']),-1 if int(s['msLevel']) == 1 else ms2plus_scan_idx))
                     # Increment MS2+ counter, if spectrum was MS2+
                     if int(s['msLevel']) > 1:
                         ms2plus_scan_idx += 1
+                except:
+                    skipped_ms2s += 1
     elif input_filetype == '.mzML':
         with open(input, 'rb') as mzml_file:
-            with mzml.read(mzml_file) as reader:
+            with mzml.read(mzml_file, decode_binary = False) as reader:
                 for s in reader:
                     # Always use given nativeID for mzML
                     spectra.append(Spectrum(s['id'],int(s['ms level']),-1 if int(s['ms level']) == 1 else ms2plus_scan_idx))
@@ -56,7 +62,7 @@ def main():
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mzML.gz':
         with gzip.open(input, 'rb') as mzmlgz_file:
-            with mzml.read(mzmlgz_file) as reader:
+            with mzml.read(mzmlgz_file, decode_binary = False) as reader:
                 for s in reader:
                     # Always use given nativeID for mzML
                     spectra.append(Spectrum(s['id'],int(s['ms level']),-1 if int(s['ms level']) == 1 else ms2plus_scan_idx))
@@ -66,7 +72,7 @@ def main():
     elif input_filetype == '.mgf':
         all_scan_idx = 0
         with open(input) as mgf_file:
-            with mgf.read(mgf_file) as reader:
+            with mgf.read(mgf_file, convert_arrays=2) as reader:
                 for s in reader:
                     # Check for MSLEVEL but assume 2
                     ms_level = int(s['params'].get('mslevel', 2))
@@ -90,6 +96,8 @@ def main():
         # Check if there are extra scans, that aren't MS2+
         if ms2plus_scan_idx < all_scan_idx:
             print("MS1s found in MGF file, proceed with caution!")
+
+    print("Unable to parse {} MS2 spectra".format(skipped_ms2s))
 
     with open(output, 'w') as f:
         r = csv.writer(f, delimiter = '\t')
