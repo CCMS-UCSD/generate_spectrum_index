@@ -43,7 +43,7 @@ def main():
                     # Always use scan= for nativeID for mzXML
                     spectra.append(Spectrum('scan={}'.format(s['num']),int(s['msLevel']),-1 if int(s['msLevel']) == 1 else ms2plus_scan_idx))
                     # Increment MS2+ counter, if spectrum was MS2+
-                    if int(s['msLevel']) > 1:
+                    if int(s.get('msLevel',2)) > 1:
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mzML':
         with open(input, 'rb') as mzml_file:
@@ -52,7 +52,7 @@ def main():
                     # Always use given nativeID for mzML
                     spectra.append(Spectrum(s['id'],int(s['ms level']),-1 if int(s['ms level']) == 1 else ms2plus_scan_idx))
                     # Increment MS2+ counter, if spectrum was MS2+
-                    if int(s['ms level']) > 1:
+                    if int(s.get('ms level',2)) > 1:
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mzML.gz':
         with gzip.open(input, 'rb') as mzmlgz_file:
@@ -61,7 +61,7 @@ def main():
                     # Always use given nativeID for mzML
                     spectra.append(Spectrum(s['id'],int(s['ms level']),-1 if int(s['ms level']) == 1 else ms2plus_scan_idx))
                     # Increment MS2+ counter, if spectrum was MS2+
-                    if int(s['ms level']) > 1:
+                    if int(s.get('ms level',2)) > 1:
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mgf':
         all_scan_idx = 0
