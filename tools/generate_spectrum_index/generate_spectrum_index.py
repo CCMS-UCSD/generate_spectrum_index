@@ -12,6 +12,7 @@ def arguments():
     parser = argparse.ArgumentParser(description='Generate index from spectrum file')
     parser.add_argument('-i','--input_spectrum', type = str, help='Single spectrum file of types mzML, mzXML, or mgf.')
     parser.add_argument('-o','--output_folder', type = str, help='Folder to write out tab-separated index file to write out')
+    parser.add_argument('-l','--default_ms_level', type = str, help='Default MSlevel')
     if len(sys.argv) < 2:
         parser.print_help()
         sys.exit(1)
@@ -43,25 +44,53 @@ def main():
                     # Always use scan= for nativeID for mzXML
                     spectra.append(Spectrum('scan={}'.format(s['num']),int(s['msLevel']),-1 if int(s['msLevel']) == 1 else ms2plus_scan_idx))
                     # Increment MS2+ counter, if spectrum was MS2+
-                    if int(s['msLevel']) > 1:
+                    if int(s.get('msLevel',2)) > 1:
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mzML':
         with open(input, 'rb') as mzml_file:
+            mzml_object = mzml.read(mzml_file)
+            param_groups = {}
+            for ref in mzml_object.iterfind("referenceableParamGroupList/referenceableParamGroup"):
+                param_groups[ref['id']] = ref
+        with open(input, 'rb') as mzml_file:
             with mzml.read(mzml_file) as reader:
                 for s in reader:
+                    ms_level = s.get('ms level')
+                    if not ms_level:
+                        spec_param_group = s.get('ref')
+                        if spec_param_group:
+                            ms_level = param_groups[spec_param_group].get('ms level')
+                        elif args.default_ms_level:
+                            ms_level = args.default_ms_level
+                        else:
+                            raise Exception("No ms level found and no default for input.")
                     # Always use given nativeID for mzML
-                    spectra.append(Spectrum(s['id'],int(s['ms level']),-1 if int(s['ms level']) == 1 else ms2plus_scan_idx))
+                    spectra.append(Spectrum(s['id'],int(ms_level),-1 if int(ms_level) == 1 else ms2plus_scan_idx))
                     # Increment MS2+ counter, if spectrum was MS2+
-                    if int(s['ms level']) > 1:
+                    if int(ms_level) > 1:
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mzML.gz':
         with gzip.open(input, 'rb') as mzmlgz_file:
+            mzml_object = mzml.read(mzml_file)
+            param_groups = {}
+            for ref in mzml_object.iterfind("referenceableParamGroupList/referenceableParamGroup"):
+                param_groups[ref['id']] = ref
+        with gzip.open(input, 'rb') as mzmlgz_file:
             with mzml.read(mzmlgz_file) as reader:
                 for s in reader:
+                    ms_level = s.get('ms level')
+                    if not ms_level:
+                        spec_param_group = s.get('ref')
+                        if spec_param_group:
+                            ms_level = param_groups[spec_param_group].get('ms level')
+                        elif args.default_ms_level:
+                            ms_level = args.default_ms_level
+                        else:
+                            raise Exception("No ms level found and no default for input.")
                     # Always use given nativeID for mzML
-                    spectra.append(Spectrum(s['id'],int(s['ms level']),-1 if int(s['ms level']) == 1 else ms2plus_scan_idx))
+                    spectra.append(Spectrum(s['id'],int(ms_level),-1 if int(ms_level) == 1 else ms2plus_scan_idx))
                     # Increment MS2+ counter, if spectrum was MS2+
-                    if int(s['ms level']) > 1:
+                    if int(ms_level) > 1:
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mgf':
         all_scan_idx = 0
