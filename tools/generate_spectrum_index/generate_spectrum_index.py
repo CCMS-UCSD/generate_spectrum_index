@@ -51,9 +51,9 @@ def main():
                             ms2plus_scan_idx += 1
         except Error as e:
             if suppress_errors:
-                print("{} is an malformatted {} file.".format(input,input_filetype))
+                raise Exception("{} is an malformatted {} file.".format(input,input_filetype))
             else:
-                raise e
+                raise Exception(e)
     elif input_filetype == '.mzML':
         try:
             with open(input, 'rb') as mzml_file:
@@ -80,9 +80,9 @@ def main():
                             ms2plus_scan_idx += 1
         except Error as e:
             if suppress_errors:
-                raise("{} is an malformatted {} file.".format(input,input_filetype))
+                raise Exception("{} is an malformatted {} file.".format(input,input_filetype))
             else:
-                raise e
+                raise Exception(e)
     elif input_filetype == '.mzML.gz':
         try:
             with gzip.open(input, 'rb') as mzmlgz_file:
@@ -109,9 +109,9 @@ def main():
                             ms2plus_scan_idx += 1
         except Error as e:
             if suppress_errors:
-                raise("{} is an malformatted {} file.".format(input,input_filetype))
+                raise Exception("{} is an malformatted {} file.".format(input,input_filetype))
             else:
-                raise e
+                raise Exception(e)
     elif input_filetype == '.mgf':
         all_scan_idx = 0
         with open(input) as mgf_file:
