@@ -2,6 +2,7 @@ from pyteomics import mzxml, mzml, mgf
 from collections import namedtuple
 import csv
 import argparse
+import subprocess
 import sys
 from pathlib import Path
 import gzip
@@ -93,28 +94,38 @@ def main():
                     if int(ms_level) > 1:
                         ms2plus_scan_idx += 1
     elif input_filetype == '.mgf':
-        all_scan_idx = 0
-        with open(input) as mgf_file:
-            with mgf.read(mgf_file) as reader:
-                for s in reader:
-                    # Check for MSLEVEL but assume 2
-                    ms_level = int(s['params'].get('mslevel', 2))
+        # try to parse this mgf file with the pyteomics library
+        try:
+            all_scan_idx = 0
+            with open(input) as mgf_file:
+                with mgf.read(mgf_file) as reader:
+                    for s in reader:
+                        # Check for MSLEVEL but assume 2
+                        ms_level = int(s['params'].get('mslevel', 2))
 
-                    scan_num = s['params'].get('scans')
-                    if scan_num:
-                        # If SCANS is in the mgf, then use scan= nativeID format
-                        native_id = ','.join('scan={}'.format(s) for s in scan_num.split(','))
-                    else:
-                        # Format as an index= nativeID
-                        native_id = 'index={}'.format(all_scan_idx)
+                        scan_num = s['params'].get('scans')
+                        if scan_num:
+                            # If SCANS is in the mgf, then use scan= nativeID format
+                            native_id = ','.join('scan={}'.format(s) for s in scan_num.split(','))
+                        else:
+                            # Format as an index= nativeID
+                            native_id = 'index={}'.format(all_scan_idx)
 
-                    spectra.append(Spectrum(native_id,ms_level,-1 if ms_level == 1 else ms2plus_scan_idx))
+                        spectra.append(Spectrum(native_id,ms_level,-1 if ms_level == 1 else ms2plus_scan_idx))
 
-                    # In the highly unlikely chance that there are MS1 scans in the MGF increment global scan idx
-                    all_scan_idx += 1
+                        # In the highly unlikely chance that there are MS1 scans in the MGF increment global scan idx
+                        all_scan_idx += 1
 
-                    if ms_level > 1:
-                        ms2plus_scan_idx += 1
+                        if ms_level > 1:
+                            ms2plus_scan_idx += 1
+        # if that didn't work, just grep for total spectrum count
+        except:
+            spectra = []
+            process = subprocess.Popen(['grep', '-c', 'BEGIN', input], stdout=subprocess.PIPE)
+            ms2_count = int(process.communicate()[0])
+            # assume all spectra are MS level 2 and write out one row for each
+            for index in range(0, ms2_count):
+                spectra.append(Spectrum('index={}'.format(index), 2, index))
 
         # Check if there are extra scans, that aren't MS2+
         if ms2plus_scan_idx < all_scan_idx:
