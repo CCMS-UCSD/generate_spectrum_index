@@ -2,7 +2,6 @@ from pyteomics import mzxml, mzml, mgf
 from collections import namedtuple
 import csv
 import argparse
-import subprocess
 import sys
 from pathlib import Path
 import gzip
@@ -139,12 +138,15 @@ def main():
 
                         if ms_level > 1:
                             ms2plus_scan_idx += 1
-        # if that didn't work, just grep for total spectrum count
+        # if that didn't work, just count spectra in the file (marked by lines containing the word "BEGIN")
         except:
-            spectra = []
-            process = subprocess.run(['grep', '-c', 'BEGIN', args.input_spectrum], stdout=subprocess.PIPE)
-            ms2_count = int(process.communicate()[0])
+            ms2_count = 0
+            with open(input) as mgf_file:
+                for line in mgf_file:
+                    if "BEGIN" in line:
+                        ms2_count += 1
             # assume all spectra are MS level 2 and write out one row for each
+            spectra = []
             for index in range(0, ms2_count):
                 spectra.append(Spectrum('index={}'.format(index), 2, index))
 
