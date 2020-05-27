@@ -11,8 +11,8 @@ Spectrum = namedtuple('Spectrum', 'nativeid mslevel ms2plusindex')
 
 def arguments():
     parser = argparse.ArgumentParser(description='Generate index from spectrum file')
-    parser.add_argument('-i','--input_spectrum', type = str, help='Single spectrum file of types mzML, mzXML, or mgf.')
-    parser.add_argument('-o','--output_folder', type = str, help='Folder to write out tab-separated index file to write out')
+    parser.add_argument('-i','--input_spectrum', type = Path, help='Single spectrum file of types mzML, mzXML, or mgf.')
+    parser.add_argument('-o','--output_folder', type = Path, help='Folder to write out tab-separated index file to write out')
     parser.add_argument('-l','--default_ms_level', type = str, help='Default MSlevel')
     parser.add_argument('-e','--suppress_error_text', help='Suppress Errors in Output', dest='suppress_errors', action='store_true')
     parser.set_defaults(suppress_errors=False)
@@ -24,12 +24,10 @@ def arguments():
 def main():
     args = arguments()
 
-    input = Path(args.input_spectrum)
-
-    input_filetype = ''.join(input.suffixes)
-
-    print(input_filetype)
-    output = Path(args.output_folder).joinpath(input.name.replace(input_filetype, '.scans'))
+    input_filetype = ''.join(args.input_spectrum.suffixes)
+    if not args.suppress_errors:
+        print(input_filetype)
+    output = Path(args.output_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.scans'))
 
     # List of output spectra
     spectra = []
@@ -42,7 +40,7 @@ def main():
 
     if input_filetype == '.mzXML':
         try:
-            with open(input, 'rb') as mzxml_file:
+            with open(args.input_spectrum, 'rb') as mzxml_file:
                 with mzxml.read(mzxml_file) as reader:
                     for s in reader:
                         # Always use scan= for nativeID for mzXML
@@ -50,14 +48,15 @@ def main():
                         # Increment MS2+ counter, if spectrum was MS2+
                         if int(s.get('msLevel',2)) > 1:
                             ms2plus_scan_idx += 1
-        except Error as e:
-            if suppress_errors:
-                raise Exception("{} is an malformatted {} file.".format(input,input_filetype))
+        except Exception as e:
+            if args.suppress_errors:
+                print("{} is an malformed {} file.".format(args.input_spectrum.name,input_filetype))
+                sys.exit(1)
             else:
                 raise Exception(e)
     elif input_filetype == '.mzML':
         try:
-            with open(input, 'rb') as mzml_file:
+            with open(args.input_spectrum, 'rb') as mzml_file:
                 mzml_object = mzml.read(mzml_file)
                 param_groups = {}
                 for ref in mzml_object.iterfind("referenceableParamGroupList/referenceableParamGroup"):
@@ -79,14 +78,15 @@ def main():
                         # Increment MS2+ counter, if spectrum was MS2+
                         if int(ms_level) > 1:
                             ms2plus_scan_idx += 1
-        except Error as e:
-            if suppress_errors:
-                raise Exception("{} is an malformatted {} file.".format(input,input_filetype))
+        except Exception as e:
+            if args.suppress_errors:
+                print("{} is an malformed {} file.".format(args.input_spectrum.name,input_filetype))
+                sys.exit(1)
             else:
                 raise Exception(e)
     elif input_filetype == '.mzML.gz':
         try:
-            with gzip.open(input, 'rb') as mzmlgz_file:
+            with gzip.open(args.input_spectrum, 'rb') as mzmlgz_file:
                 mzml_object = mzml.read(mzml_file)
                 param_groups = {}
                 for ref in mzml_object.iterfind("referenceableParamGroupList/referenceableParamGroup"):
@@ -108,16 +108,17 @@ def main():
                         # Increment MS2+ counter, if spectrum was MS2+
                         if int(ms_level) > 1:
                             ms2plus_scan_idx += 1
-        except Error as e:
-            if suppress_errors:
-                raise Exception("{} is an malformatted {} file.".format(input,input_filetype))
+        except Exception as e:
+            if args.suppress_errors:
+                print("{} is an malformed {} file.".format(args.input_spectrum.name,input_filetype))
+                sys.exit(1)
             else:
                 raise Exception(e)
     elif input_filetype == '.mgf':
         # try to parse this mgf file with the pyteomics library
         try:
             all_scan_idx = 0
-            with open(input) as mgf_file:
+            with open(args.input_spectrum) as mgf_file:
                 with mgf.read(mgf_file) as reader:
                     for s in reader:
                         # Check for MSLEVEL but assume 2
@@ -141,7 +142,7 @@ def main():
         # if that didn't work, just grep for total spectrum count
         except:
             spectra = []
-            process = subprocess.Popen(['grep', '-c', 'BEGIN', input], stdout=subprocess.PIPE)
+            process = subprocess.run(['grep', '-c', 'BEGIN', args.input_spectrum], stdout=subprocess.PIPE)
             ms2_count = int(process.communicate()[0])
             # assume all spectra are MS level 2 and write out one row for each
             for index in range(0, ms2_count):
