@@ -49,7 +49,7 @@ def main():
                             ms2plus_scan_idx += 1
         except Exception as e:
             if args.suppress_errors:
-                print("{} is an malformed {} file.".format(args.input_spectrum.name,input_filetype))
+                print("{} is a malformed {} file.".format(args.input_spectrum.name,input_filetype))
                 sys.exit(1)
             else:
                 raise Exception(e)
@@ -79,7 +79,7 @@ def main():
                             ms2plus_scan_idx += 1
         except Exception as e:
             if args.suppress_errors:
-                print("{} is an malformed {} file.".format(args.input_spectrum.name,input_filetype))
+                print("{} is a malformed {} file.".format(args.input_spectrum.name,input_filetype))
                 sys.exit(1)
             else:
                 raise Exception(e)
@@ -109,7 +109,7 @@ def main():
                             ms2plus_scan_idx += 1
         except Exception as e:
             if args.suppress_errors:
-                print("{} is an malformed {} file.".format(args.input_spectrum.name,input_filetype))
+                print("{} is a malformed {} file.".format(args.input_spectrum.name,input_filetype))
                 sys.exit(1)
             else:
                 raise Exception(e)
