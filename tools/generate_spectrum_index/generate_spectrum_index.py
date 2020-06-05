@@ -60,7 +60,7 @@ def main():
                 param_groups = {}
                 for ref in mzml_object.iterfind("referenceableParamGroupList/referenceableParamGroup"):
                     param_groups[ref['id']] = ref
-            with open(input, 'rb') as mzml_file:
+            with open(args.input_spectrum, 'rb') as mzml_file:
                 with mzml.read(mzml_file) as reader:
                     for s in reader:
                         ms_level = s.get('ms level')
@@ -86,11 +86,11 @@ def main():
     elif input_filetype == '.mzML.gz':
         try:
             with gzip.open(args.input_spectrum, 'rb') as mzmlgz_file:
-                mzml_object = mzml.read(mzml_file)
+                mzml_object = mzml.read(mzmlgz_file)
                 param_groups = {}
                 for ref in mzml_object.iterfind("referenceableParamGroupList/referenceableParamGroup"):
                     param_groups[ref['id']] = ref
-            with gzip.open(input, 'rb') as mzmlgz_file:
+            with gzip.open(args.input_spectrum, 'rb') as mzmlgz_file:
                 with mzml.read(mzmlgz_file) as reader:
                     for s in reader:
                         ms_level = s.get('ms level')
@@ -141,7 +141,7 @@ def main():
         # if that didn't work, just count spectra in the file (marked by lines containing the word "BEGIN")
         except:
             ms2_count = 0
-            with open(input) as mgf_file:
+            with open(args.input_spectrum) as mgf_file:
                 for line in mgf_file:
                     if "BEGIN" in line:
                         ms2_count += 1
