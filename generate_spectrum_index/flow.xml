@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
-<flow name="fast_tst_workflow">
+<flow name="generate_spectrum_index">
         <object     name="workflowParameters"/>
         <collection name="inputspectra"/>
 
