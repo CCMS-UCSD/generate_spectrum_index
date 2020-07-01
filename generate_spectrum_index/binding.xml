@@ -17,9 +17,15 @@
 		</download>
         </bind>
 
-        <bind action="dummy" tool="dummy">
+        <bind action="extract_scans" tool="extract_scans">
                 <inputAsRequirement port="inputspectra"       requirement="inputspectra"/>
             <productionToOutput port="summary_stats" production="summary_stats"/>
+        </bind>
+
+        <bind action="format_stats" tool="format_stats">
+                <inputAsRequirement port="workflowParameters"       requirement="workflowParameters"/>
+                <inputAsRequirement port="summary_stats"       requirement="summary_stats"/>
+            <productionToOutput port="condensed_stats" production="condensed_stats"/>
         </bind>
 
         <bind action="end" type="upload">
@@ -29,6 +35,9 @@
                 <compression type="zip"/>
                 <upload port="summary_stats" type="folder">
                         <query name="resource" value="summary_stats"/>
+                </upload>
+                <upload port="condensed_stats" type="folder">
+                        <query name="resource" value="condensed_stats"/>
                 </upload>
         </bind>
 </binding>
