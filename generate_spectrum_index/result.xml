@@ -4,7 +4,7 @@
     </download>
 
     <!-- View definitions -->
-    <view id="condensed_stats" label="condensed_stats">
+    <view id="condensed_stats" label="All Spectra in Files">
         <blockRef id="main" type="condensed_stats"/>
     </view>
 
@@ -18,6 +18,9 @@
 
             <row>
                 <column type="text" field="filename" label="filename" width="12"/>
+                <column type="text" field="mslevel" label="mslevel" width="12"/>
+                <column type="text" field="identifier" label="identifier" width="12"/>
+                <column type="text" field="usi" label="usi" width="12"/>
             </row>
         </data>
 
