@@ -4,14 +4,14 @@
     </download>
 
     <!-- View definitions -->
-    <view id="collection_file_stats" label="collection_file_stats">
-        <blockRef id="main" type="collection_file_stats"/>
+    <view id="condensed_stats" label="condensed_stats">
+        <blockRef id="main" type="condensed_stats"/>
     </view>
 
     <!-- Block definitions -->
-    <block id="collection_file_stats" type="table">
+    <block id="condensed_stats" type="table">
         <data>
-            <source type="file" name="collection_file_stats/"/>
+            <source type="file" name="condensed_stats/"/>
             <parsers>
                 <parser type="sortedTabular" sortBy="header" operator="ascending"/>
             </parsers>

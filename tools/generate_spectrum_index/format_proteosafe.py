@@ -2,6 +2,7 @@ import glob
 import pandas as pd
 import sys
 from pathlib import Path
+import argparse
 
 def arguments():
     parser = argparse.ArgumentParser(description='Generate index from spectrum file')
@@ -14,7 +15,21 @@ def arguments():
 
 def main():
     args = arguments()
-    print(args)
+    
+    input_files = glob.glob("{}/*".format(args.input_folder_results))
+
+    list_df = []
+    for input_file in input_files:
+        try:
+            df = pd.read_csv(input_file, sep="\t")
+            list_df.append(df)
+        except:
+            pass
+
+    merged_list_df = pd.concat(list_df)
+
+    merged_list_df.to_csv(args.output_summarize_file, sep="\t", index=False)
+
 
 
 if __name__ == "__main__":
