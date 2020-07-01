@@ -3,6 +3,7 @@ import pandas as pd
 import sys
 from pathlib import Path
 import argparse
+import os
 
 def arguments():
     parser = argparse.ArgumentParser(description='Generate index from spectrum file')
@@ -21,7 +22,8 @@ def main():
     list_df = []
     for input_file in input_files:
         try:
-            df = pd.read_csv(input_file, sep="\t")
+            df = pd.read_csv(input_file, sep="\t", header=0, names=["identifier", "mslevel", "index"])
+            df["filename"] = os.path.basename(input_file)
             list_df.append(df)
         except:
             pass

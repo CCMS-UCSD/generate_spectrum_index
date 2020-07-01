@@ -13,11 +13,11 @@
         <data>
             <source type="file" name="condensed_stats/"/>
             <parsers>
-                <parser type="sortedTabular" sortBy="header" operator="ascending"/>
+                <parser type="sortedTabular" sortBy="filename" operator="ascending"/>
             </parsers>
 
             <row>
-                <column type="text" field="header" label="header" width="12"/>
+                <column type="text" field="filename" label="filename" width="12"/>
             </row>
         </data>
 
