@@ -17,7 +17,7 @@
             </parsers>
 
             <row>
-                <column type="text" field="filename" label="filename" width="12"/>
+                <column type="text" field="proteosafe_filename" label="proteosafe_filename" width="12"/>
                 <column type="text" field="mslevel" label="mslevel" width="12"/>
                 <column type="text" field="identifier" label="identifier" width="12"/>
                 <column label="USI-Spectrum" type="genericurlgenerator" width="3"> \
