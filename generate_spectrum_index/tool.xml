@@ -1,0 +1,22 @@
+<toolset>
+    <pathSet base="miniconda3_gamma/bin">
+        <toolPath tool="dummy" path="python"/>
+    </pathSet>
+
+    <pathSet base="$base">
+        <pathVar name="dummy.script" path="generate_spectrum_index.py"/>
+    </pathSet>
+
+    <tool name="dummy">
+    <require name="inputspectra" type="file"/>
+        <produce name="summary_stats" type="folder"/>
+
+        <execution env="binary" argConvention="adhoc">
+            <arg pathRef="dummy.script"/>
+            <arg option="-input_spectrum" valueRef="inputspectra"/>
+            <arg option="-output_folder" valueRef="summary_stats"/>
+        </execution>
+    </tool>
+
+
+</toolset>

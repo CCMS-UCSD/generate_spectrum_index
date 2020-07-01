@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<flow name="fast_tst_workflow">
+        <object     name="workflowParameters"/>
+        <collection name="inputspectra"/>
+
+        <action name="begin">
+                <output port="flowParams" object="workflowParameters"/>
+                <output port="spec"       collection="inputspectra"/>
+        </action>
+
+        <collection name="summary_stats"/>
+        <action name="dummy">
+                <input  port="flowParams"             object="workflowParameters"/>
+                <input  port="inputspectra"             collection="inputspectra"/>
+                <output port="summary_stats"           collection="summary_stats"/>
+        </action>
+
+        <action name="end">
+                <input port="summary_stats"           collection="summary_stats"/>
+        </action>
+</flow>
