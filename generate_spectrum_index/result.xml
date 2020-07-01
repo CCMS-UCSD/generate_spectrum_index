@@ -9,11 +9,12 @@
     </view>
 
     <!-- Block definitions -->
-    <block id="condensed_stats" type="table">
+    <block id="condensed_stats" type="table_ss">
         <data>
             <source type="file" name="condensed_stats/"/>
             <parsers>
-                <parser type="sortedTabular" sortBy="filename" operator="ascending"/>
+                <parser type="tabular" />
+                <parser type="SQLite" />
             </parsers>
 
             <row>
