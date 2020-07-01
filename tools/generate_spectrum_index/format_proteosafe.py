@@ -73,8 +73,13 @@ def main():
         proteosafe_path = record["proteosafe_filename"]
         if record["proteosafe_filename"].startswith("MSV0000"):
             dataset_accession = proteosafe_path.split("/")[0]
-            usi = "mzspec:{}:{}:scan:{}".format(dataset_accession, 
-            os.path.basename(proteosafe_path), record['identifier'])
+            identifier_type = record["identifier"].split("=")[0]
+            identifier_value = record["identifier"].split("=")[1]
+
+            usi = "mzspec:{}:{}:{}:{}".format(dataset_accession, 
+            os.path.basename(proteosafe_path), identifier_type, identifier_value)
+
+            
 
             record["usi"] = usi
 

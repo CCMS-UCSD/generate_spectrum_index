@@ -20,7 +20,11 @@
                 <column type="text" field="filename" label="filename" width="12"/>
                 <column type="text" field="mslevel" label="mslevel" width="12"/>
                 <column type="text" field="identifier" label="identifier" width="12"/>
-                <column type="text" field="usi" label="usi" width="12"/>
+                <column label="USI-Spectrum" type="genericurlgenerator" width="3"> \
+                    <parameter name="URLBASE" value="https://metabolomics-usi.ucsd.edu/spectrum/"/>\
+                    <parameter name="REQUESTPARAMETER=usi" value="[usi]"/>
+                    <parameter name="LABEL" value="Spectrum USI"/>
+                </column>
             </row>
         </data>
 
