@@ -35,14 +35,14 @@ def arguments():
     parser.add_argument('input_folder_results', type = Path, help='Input folder of results.')
     parser.add_argument('proteosafe_paramxml', type = Path, help='Default MSlevel')
     parser.add_argument('output_summarize_file', type = Path, help='Folder to write out tab-separated index file to write out')
-    
+
     parser.set_defaults(suppress_errors=False)
 
     return parser.parse_args()
 
 def main():
     args = arguments()
-    
+
     input_files = glob.glob("{}/*".format(args.input_folder_results))
     proteosafe_args = parse_xml_file(args.proteosafe_paramxml)
     mangled_mapping = get_mangled_file_mapping(proteosafe_args)
@@ -52,7 +52,7 @@ def main():
     list_df = []
     for input_file in input_files:
         try:
-            df = pd.read_csv(input_file, sep="\t", header=0, names=["identifier", "mslevel", "index"])
+            df = pd.read_csv(input_file, sep="\t", header=0, names=["identifier", "mslevel", "ms2_index"])
             df["filename"] = os.path.basename(input_file)
             list_df.append(df)
         except:
@@ -73,13 +73,19 @@ def main():
         proteosafe_path = record["proteosafe_filename"]
         if record["proteosafe_filename"].startswith("MSV0000"):
             dataset_accession = proteosafe_path.split("/")[0]
-            identifier_type = record["identifier"].split("=")[0]
-            identifier_value = record["identifier"].split("=")[1]
 
-            usi = "mzspec:{}:{}:{}:{}".format(dataset_accession, 
+            #hack to handle nativeid in mzXML, mzML
+            if len(record["identifier"].split(" ")) > 1:
+                identifier_type = "nativeid"
+                identifier_value = ",".join([r.split("=")[1] for r in record["identifier"].split(" ")])
+            else:
+                identifier_type = record["identifier"].split("=")[0]
+                identifier_value = record["identifier"].split("=")[1]
+
+            usi = "mzspec:{}:{}:{}:{}".format(dataset_accession,
             os.path.basename(proteosafe_path), identifier_type, identifier_value)
 
-            
+
 
             record["usi"] = usi
 
