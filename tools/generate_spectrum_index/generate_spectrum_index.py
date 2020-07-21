@@ -13,6 +13,7 @@ def arguments():
     parser.add_argument('-i','--input_spectrum', type = Path, help='Single spectrum file of types mzML, mzXML, or mgf.')
     parser.add_argument('-o','--output_folder', type = Path, help='Folder to write out tab-separated index file to write out')
     parser.add_argument('-l','--default_ms_level', type = str, help='Default MSlevel')
+    parser.add_argument('-p','--proteosafe_params', type = str, help='params.xml from ProteoSAFe')
     parser.add_argument('-e','--suppress_error_text', help='Suppress Errors in Output', dest='suppress_errors', action='store_true')
     parser.set_defaults(suppress_errors=False)
     if len(sys.argv) < 2:
@@ -140,16 +141,22 @@ def main():
                             ms2plus_scan_idx += 1
         # if that didn't work, just count spectra in the file (marked by lines containing the word "BEGIN")
         except:
-            ms2_count = 0
-            with open(args.input_spectrum) as mgf_file:
-                for line in mgf_file:
-                    if "BEGIN" in line:
-                        ms2_count += 1
-            # assume all spectra are MS level 2 and write out one row for each
-            spectra = []
-            for index in range(0, ms2_count):
-                spectra.append(Spectrum('index={}'.format(index), 2, index))
-
+            try:
+                ms2_count = 0
+                with open(args.input_spectrum) as mgf_file:
+                    for line in mgf_file:
+                        if "BEGIN" in line:
+                            ms2_count += 1
+                # assume all spectra are MS level 2 and write out one row for each
+                spectra = []
+                for index in range(0, ms2_count):
+                    spectra.append(Spectrum('index={}'.format(index), 2, index))
+            except UnicodeDecodeError as e:
+                if args.suppress_errors:
+                    print("{} is a malformed {} file.".format(args.input_spectrum.name,input_filetype))
+                    sys.exit(1)
+                else:
+                    raise Exception(e)
         # Check if there are extra scans, that aren't MS2+
         if ms2plus_scan_idx < all_scan_idx:
             print("MS1s found in MGF file, proceed with caution!")
