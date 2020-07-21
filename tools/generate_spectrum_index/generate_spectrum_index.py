@@ -14,7 +14,7 @@ def arguments():
     parser.add_argument('-o','--output_folder', type = Path, help='Folder to write out tab-separated index file to write out')
     parser.add_argument('-l','--default_ms_level', type = str, help='Default MSlevel')
     parser.add_argument('-p','--proteosafe_params', type = str, help='params.xml from ProteoSAFe')
-    parser.add_argument('-e','--suppress_error_text', help='Suppress Errors in Output', dest='suppress_errors', action='store_true')
+    parser.add_argument('-e','--error_folder', type = Path, help='Write error file to this folder')
     parser.set_defaults(suppress_errors=False)
     if len(sys.argv) < 2:
         parser.print_help()
@@ -28,7 +28,10 @@ def main():
     if not args.suppress_errors:
         print(input_filetype)
     output = Path(args.output_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.scans'))
-
+    if args.error_folder and args.error_folder.is_dir():
+        output_err = Path(args.error_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.err'))
+    else:
+        output_err = None
     # List of output spectra
     spectra = []
 
@@ -49,9 +52,10 @@ def main():
                         if int(s.get('msLevel',2)) > 1:
                             ms2plus_scan_idx += 1
         except Exception as e:
-            if args.suppress_errors:
-                print("{} is a malformed {} file.".format(args.input_spectrum.name,input_filetype))
-                sys.exit(1)
+            if output_err:
+                with open(output_err, 'w') as w_err:
+                    w_err.write(repr(e))
+                sys.exit(0)
             else:
                 raise Exception(e)
     elif input_filetype == '.mzML':
@@ -79,9 +83,10 @@ def main():
                         if int(ms_level) > 1:
                             ms2plus_scan_idx += 1
         except Exception as e:
-            if args.suppress_errors:
-                print("{} is a malformed {} file.".format(args.input_spectrum.name,input_filetype))
-                sys.exit(1)
+            if output_err:
+                with open(output_err, 'w') as w_err:
+                    w_err.write(repr(e))
+                sys.exit(0)
             else:
                 raise Exception(e)
     elif input_filetype == '.mzML.gz':
@@ -109,9 +114,10 @@ def main():
                         if int(ms_level) > 1:
                             ms2plus_scan_idx += 1
         except Exception as e:
-            if args.suppress_errors:
-                print("{} is a malformed {} file.".format(args.input_spectrum.name,input_filetype))
-                sys.exit(1)
+            if output_err:
+                with open(output_err, 'w') as w_err:
+                    w_err.write(repr(e))
+                sys.exit(0)
             else:
                 raise Exception(e)
     elif input_filetype == '.mgf':
@@ -151,10 +157,11 @@ def main():
                 spectra = []
                 for index in range(0, ms2_count):
                     spectra.append(Spectrum('index={}'.format(index), 2, index))
-            except UnicodeDecodeError as e:
-                if args.suppress_errors:
-                    print("{} is a malformed {} file.".format(args.input_spectrum.name,input_filetype))
-                    sys.exit(1)
+            except Exception as e:
+                if output_err:
+                    with open(output_err, 'w') as w_err:
+                        w_err.write(repr(e))
+                    sys.exit(0)
                 else:
                     raise Exception(e)
         # Check if there are extra scans, that aren't MS2+
