@@ -149,7 +149,7 @@ def main():
             try:
                 ms2_count = 0
                 with open(args.input_spectrum) as mgf_file:
-                    for line in mgf_file:
+                    for i,line in enumerate(mgf_file):
                         if "BEGIN" in line:
                             ms2_count += 1
                 # assume all spectra are MS level 2 and write out one row for each
