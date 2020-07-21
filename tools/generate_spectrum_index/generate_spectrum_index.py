@@ -141,10 +141,14 @@ def main():
                             ms2plus_scan_idx += 1
         # if that didn't work, just count spectra in the file (marked by lines containing the word "BEGIN")
         except:
+
+            current_line = 0
+
             try:
                 ms2_count = 0
                 with open(args.input_spectrum) as mgf_file:
-                    for line in mgf_file:
+                    for i,line in enumerate(mgf_file):
+                        current_line = i+1
                         if "BEGIN" in line:
                             ms2_count += 1
                 # assume all spectra are MS level 2 and write out one row for each
@@ -153,7 +157,7 @@ def main():
                     spectra.append(Spectrum('index={}'.format(index), 2, index))
             except UnicodeDecodeError as e:
                 if args.suppress_errors:
-                    print("{} is a malformed {} file.".format(args.input_spectrum.name,input_filetype))
+                    print("{} is a malformed {} file, first invalid character found on line {}.".format(args.input_spectrum.name,input_filetype, current_line))
                     sys.exit(1)
                 else:
                     raise Exception(e)
