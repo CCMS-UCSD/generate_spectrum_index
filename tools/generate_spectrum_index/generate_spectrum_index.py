@@ -13,7 +13,6 @@ def arguments():
     parser.add_argument('-i','--input_spectrum', type = Path, help='Single spectrum file of types mzML, mzXML, or mgf.')
     parser.add_argument('-o','--output_folder', type = Path, help='Folder to write out tab-separated index file to write out')
     parser.add_argument('-l','--default_ms_level', type = str, help='Default MSlevel')
-    parser.add_argument('-p','--proteosafe_params', type = str, help='params.xml from ProteoSAFe')
     parser.add_argument('-e','--error_folder', type = Path, help='Write error file to this folder')
     parser.set_defaults(suppress_errors=False)
     if len(sys.argv) < 2:
