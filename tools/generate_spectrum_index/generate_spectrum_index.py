@@ -12,7 +12,7 @@ def arguments():
     parser = argparse.ArgumentParser(description='Generate index from spectrum file')
     parser.add_argument('-i','--input_spectrum', type = Path, help='Single spectrum file of types mzML, mzXML, or mgf.')
     parser.add_argument('-o','--output_folder', type = Path, help='Folder to write out tab-separated index file to write out')
-    parser.add_argument('-l','--default_ms_level', type = str, help='Default MSlevel')
+    parser.add_argument('-l','--default_ms_level', type = str, help='Default MSlevel', default='0')
     parser.add_argument('-e','--error_folder', type = Path, help='Write error file to this folder')
     parser.set_defaults(suppress_errors=False)
     if len(sys.argv) < 2:
@@ -46,7 +46,7 @@ def main():
                 with mzxml.read(mzxml_file) as reader:
                     for s in reader:
                         # Always use scan= for nativeID for mzXML
-                        spectra.append(Spectrum('scan={}'.format(s['num']),int(s['msLevel']),-1 if int(s['msLevel']) == 1 else ms2plus_scan_idx))
+                        spectra.append(Spectrum('scan={}'.format(s['num']),int(s['msLevel']),-1 if int(s['msLevel']) <= 1 else ms2plus_scan_idx))
                         # Increment MS2+ counter, if spectrum was MS2+
                         if int(s.get('msLevel',2)) > 1:
                             ms2plus_scan_idx += 1
@@ -72,12 +72,10 @@ def main():
                             spec_param_group = s.get('ref')
                             if spec_param_group:
                                 ms_level = param_groups[spec_param_group].get('ms level')
-                            elif args.default_ms_level:
-                                ms_level = args.default_ms_level
                             else:
-                                raise Exception("No ms level found and no default for input.")
+                                ms_level = args.default_ms_level
                         # Always use given nativeID for mzML
-                        spectra.append(Spectrum(s['id'],int(ms_level),-1 if int(ms_level) == 1 else ms2plus_scan_idx))
+                        spectra.append(Spectrum(s['id'],int(ms_level),-1 if int(ms_level) <= 1 else ms2plus_scan_idx))
                         # Increment MS2+ counter, if spectrum was MS2+
                         if int(ms_level) > 1:
                             ms2plus_scan_idx += 1
@@ -103,12 +101,10 @@ def main():
                             spec_param_group = s.get('ref')
                             if spec_param_group:
                                 ms_level = param_groups[spec_param_group].get('ms level')
-                            elif args.default_ms_level:
-                                ms_level = args.default_ms_level
                             else:
-                                raise Exception("No ms level found and no default for input.")
+                                ms_level = args.default_ms_level
                         # Always use given nativeID for mzML
-                        spectra.append(Spectrum(s['id'],int(ms_level),-1 if int(ms_level) == 1 else ms2plus_scan_idx))
+                        spectra.append(Spectrum(s['id'],int(ms_level),-1 if int(ms_level) <= 1 else ms2plus_scan_idx))
                         # Increment MS2+ counter, if spectrum was MS2+
                         if int(ms_level) > 1:
                             ms2plus_scan_idx += 1
