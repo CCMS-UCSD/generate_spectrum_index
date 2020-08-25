@@ -27,7 +27,7 @@ def main():
     if not args.suppress_errors:
         print(input_filetype)
     output = Path(args.output_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.scans'))
-
+    input_filetype = input_filetype.lower()
     # List of output spectra
     spectra = []
 
@@ -37,7 +37,7 @@ def main():
     # In the highly unlikely chance that there are MS1 scans in the MGF set warning flag
     mgf_ms1_warn = False
 
-    if input_filetype == '.mzXML':
+    if input_filetype == '.mzxml':
         try:
             with open(args.input_spectrum, 'rb') as mzxml_file:
                 with mzxml.read(mzxml_file) as reader:
@@ -53,7 +53,7 @@ def main():
                 sys.exit(1)
             else:
                 raise Exception(e)
-    elif input_filetype == '.mzML':
+    elif input_filetype == '.mzml':
         try:
             with open(args.input_spectrum, 'rb') as mzml_file:
                 mzml_object = mzml.read(mzml_file)
@@ -81,7 +81,7 @@ def main():
                 sys.exit(1)
             else:
                 raise Exception(e)
-    elif input_filetype == '.mzML.gz':
+    elif input_filetype == '.mzml.gz':
         try:
             with gzip.open(args.input_spectrum, 'rb') as mzmlgz_file:
                 mzml_object = mzml.read(mzmlgz_file)
@@ -149,7 +149,13 @@ def main():
         # Check if there are extra scans, that aren't MS2+
         if ms2plus_scan_idx < all_scan_idx:
             print("MS1s found in MGF file, proceed with caution!")
-
+    else:
+        if args.suppress_errors:
+            print("{} has an unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
+            sys.exit(1)
+        else:
+            raise Exception("{} has an unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
+            
     with open(output, 'w') as f:
         r = csv.writer(f, delimiter = '\t')
         for spectrum in spectra:
