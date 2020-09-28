@@ -37,7 +37,7 @@ def main():
         input_filetype = '.mzxml'
     else:
         input_filetype = ''.join(input_suffixes)
-        
+
     if not args.suppress_errors:
         print(input_filetype)
     output = Path(args.output_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.scans'))
@@ -161,6 +161,53 @@ def main():
                 ms2_count = 0
                 with open(args.input_spectrum) as mgf_file:
                     for i,line in enumerate(mgf_file):
+                        if "BEGIN" in line:
+                            ms2_count += 1
+                # assume all spectra are MS level 2 and write out one row for each
+                spectra = []
+                for index in range(0, ms2_count):
+                    spectra.append(Spectrum('index={}'.format(index), 2, index))
+            except Exception as e:
+                if output_err:
+                    with open(output_err, 'w') as w_err:
+                        w_err.write(repr(e))
+                    sys.exit(0)
+                else:
+                    raise Exception(e)
+        # Check if there are extra scans, that aren't MS2+
+        if ms2plus_scan_idx < all_scan_idx:
+            print("MS1s found in MGF file, proceed with caution!")
+    elif input_filetype == '.mgf.gz':
+        # try to parse this mgf file with the pyteomics library
+        try:
+            all_scan_idx = 0
+            with gzip.open(args.input_spectrum) as mgf_gz_file:
+                with mgf.read(mgf_gz_file) as reader:
+                    for s in reader:
+                        # Check for MSLEVEL but assume 2
+                        ms_level = int(s['params'].get('mslevel', 2))
+
+                        scan_num = s['params'].get('scans')
+                        if scan_num:
+                            # If SCANS is in the mgf, then use scan= nativeID format
+                            native_id = ','.join('scan={}'.format(s) for s in scan_num.split(','))
+                        else:
+                            # Format as an index= nativeID
+                            native_id = 'index={}'.format(all_scan_idx)
+
+                        spectra.append(Spectrum(native_id,ms_level,-1 if ms_level == 1 else ms2plus_scan_idx))
+
+                        # In the highly unlikely chance that there are MS1 scans in the MGF increment global scan idx
+                        all_scan_idx += 1
+
+                        if ms_level > 1:
+                            ms2plus_scan_idx += 1
+        # if that didn't work, just count spectra in the file (marked by lines containing the word "BEGIN")
+        except:
+            try:
+                ms2_count = 0
+                with gzip.open(args.input_spectrum) as mgf_gz_file:
+                    for i,line in enumerate(mgf_gz_file):
                         if "BEGIN" in line:
                             ms2_count += 1
                 # assume all spectra are MS level 2 and write out one row for each
