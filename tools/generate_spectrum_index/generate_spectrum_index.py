@@ -35,7 +35,9 @@ def main():
             input_filetype = '.mgf'
     elif '.mzxml' in input_filetype:
         input_filetype = '.mzxml'
-
+    else:
+        input_filetype = ''.join(input_suffixes)
+        
     if not args.suppress_errors:
         print(input_filetype)
     output = Path(args.output_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.scans'))
