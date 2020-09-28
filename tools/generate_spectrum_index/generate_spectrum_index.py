@@ -12,9 +12,8 @@ def arguments():
     parser = argparse.ArgumentParser(description='Generate index from spectrum file')
     parser.add_argument('-i','--input_spectrum', type = Path, help='Single spectrum file of types mzML, mzXML, or mgf.')
     parser.add_argument('-o','--output_folder', type = Path, help='Folder to write out tab-separated index file to write out')
-    parser.add_argument('-l','--default_ms_level', type = str, help='Default MSlevel')
+    parser.add_argument('-l','--default_ms_level', type = str, help='Default MSlevel', default='0')
     parser.add_argument('-e','--error_folder', type = Path, help='Write error file to this folder')
-    parser.set_defaults(suppress_errors=False)
     if len(sys.argv) < 2:
         parser.print_help()
         sys.exit(1)
@@ -27,6 +26,7 @@ def main():
     if not args.suppress_errors:
         print(input_filetype)
     output = Path(args.output_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.scans'))
+    input_filetype = input_filetype.lower()
     if args.error_folder and args.error_folder.is_dir():
         output_err = Path(args.error_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.err'))
     else:
@@ -40,13 +40,13 @@ def main():
     # In the highly unlikely chance that there are MS1 scans in the MGF set warning flag
     mgf_ms1_warn = False
 
-    if input_filetype == '.mzXML':
+    if input_filetype == '.mzxml':
         try:
             with open(args.input_spectrum, 'rb') as mzxml_file:
                 with mzxml.read(mzxml_file) as reader:
                     for s in reader:
                         # Always use scan= for nativeID for mzXML
-                        spectra.append(Spectrum('scan={}'.format(s['num']),int(s['msLevel']),-1 if int(s['msLevel']) == 1 else ms2plus_scan_idx))
+                        spectra.append(Spectrum('scan={}'.format(s['num']),int(s['msLevel']),-1 if int(s['msLevel']) <= 1 else ms2plus_scan_idx))
                         # Increment MS2+ counter, if spectrum was MS2+
                         if int(s.get('msLevel',2)) > 1:
                             ms2plus_scan_idx += 1
@@ -57,7 +57,7 @@ def main():
                 sys.exit(0)
             else:
                 raise Exception(e)
-    elif input_filetype == '.mzML':
+    elif input_filetype == '.mzml':
         try:
             with open(args.input_spectrum, 'rb') as mzml_file:
                 mzml_object = mzml.read(mzml_file)
@@ -72,12 +72,10 @@ def main():
                             spec_param_group = s.get('ref')
                             if spec_param_group:
                                 ms_level = param_groups[spec_param_group].get('ms level')
-                            elif args.default_ms_level:
-                                ms_level = args.default_ms_level
                             else:
-                                raise Exception("No ms level found and no default for input.")
+                                ms_level = args.default_ms_level
                         # Always use given nativeID for mzML
-                        spectra.append(Spectrum(s['id'],int(ms_level),-1 if int(ms_level) == 1 else ms2plus_scan_idx))
+                        spectra.append(Spectrum(s['id'],int(ms_level),-1 if int(ms_level) <= 1 else ms2plus_scan_idx))
                         # Increment MS2+ counter, if spectrum was MS2+
                         if int(ms_level) > 1:
                             ms2plus_scan_idx += 1
@@ -88,7 +86,7 @@ def main():
                 sys.exit(0)
             else:
                 raise Exception(e)
-    elif input_filetype == '.mzML.gz':
+    elif input_filetype == '.mzml.gz':
         try:
             with gzip.open(args.input_spectrum, 'rb') as mzmlgz_file:
                 mzml_object = mzml.read(mzmlgz_file)
@@ -103,12 +101,10 @@ def main():
                             spec_param_group = s.get('ref')
                             if spec_param_group:
                                 ms_level = param_groups[spec_param_group].get('ms level')
-                            elif args.default_ms_level:
-                                ms_level = args.default_ms_level
                             else:
-                                raise Exception("No ms level found and no default for input.")
+                                ms_level = args.default_ms_level
                         # Always use given nativeID for mzML
-                        spectra.append(Spectrum(s['id'],int(ms_level),-1 if int(ms_level) == 1 else ms2plus_scan_idx))
+                        spectra.append(Spectrum(s['id'],int(ms_level),-1 if int(ms_level) <= 1 else ms2plus_scan_idx))
                         # Increment MS2+ counter, if spectrum was MS2+
                         if int(ms_level) > 1:
                             ms2plus_scan_idx += 1
@@ -166,7 +162,13 @@ def main():
         # Check if there are extra scans, that aren't MS2+
         if ms2plus_scan_idx < all_scan_idx:
             print("MS1s found in MGF file, proceed with caution!")
-
+    else:
+        if args.suppress_errors:
+            print("{} has an unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
+            sys.exit(1)
+        else:
+            raise Exception("{} has an unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
+            
     with open(output, 'w') as f:
         r = csv.writer(f, delimiter = '\t')
         for spectrum in spectra:
