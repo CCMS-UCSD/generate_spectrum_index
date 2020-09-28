@@ -22,7 +22,20 @@ def arguments():
 def main():
     args = arguments()
 
-    input_filetype = ''.join(args.input_spectrum.suffixes)
+    input_suffixes = [suffix.lower() for suffix in args.input_spectrum.suffixes]
+    if '.mzml' in input_filetype:
+        if '.gz' in input_filetype:
+            input_filetype = '.mzml.gz'
+        else:
+            input_filetype = '.mzml'
+    elif '.mgf' in input_filetype:
+        if '.gz' in input_filetype:
+            input_filetype = '.mgf.gz'
+        else:
+            input_filetype = '.mgf'
+    elif '.mzxml' in input_filetype:
+        input_filetype = '.mzxml'
+
     if not args.suppress_errors:
         print(input_filetype)
     output = Path(args.output_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.scans'))
@@ -168,7 +181,7 @@ def main():
             sys.exit(1)
         else:
             raise Exception("{} has an unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
-            
+
     with open(output, 'w') as f:
         r = csv.writer(f, delimiter = '\t')
         for spectrum in spectra:
