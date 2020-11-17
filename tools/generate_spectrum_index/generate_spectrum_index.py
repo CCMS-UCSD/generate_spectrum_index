@@ -23,27 +23,29 @@ def main():
     args = arguments()
 
     input_suffixes = [suffix.lower() for suffix in args.input_spectrum.suffixes]
-    if '.mzml' in input_filetype:
-        if '.gz' in input_filetype:
+    if '.mzml' in input_suffixes:
+        if '.gz' in input_suffixes:
             input_filetype = '.mzml.gz'
         else:
             input_filetype = '.mzml'
-    elif '.mgf' in input_filetype:
-        if '.gz' in input_filetype:
+    elif '.mgf' in input_suffixes:
+        if '.gz' in input_suffixes:
             input_filetype = '.mgf.gz'
         else:
             input_filetype = '.mgf'
-    elif '.mzxml' in input_filetype:
+    elif '.mzxml' in input_suffixes:
         input_filetype = '.mzxml'
     else:
         input_filetype = ''.join(input_suffixes)
 
-    if not args.suppress_errors:
-        print(input_filetype)
-    output = Path(args.output_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.scans'))
+    #Apache FilenameUtils.getBaseName method just takes off the
+    #last extension so to match the downstream code,
+    #we just remove the final suffix
+    
+    output = Path(args.output_folder).joinpath(args.input_spectrum.name.with_suffix('.scans'))
     input_filetype = input_filetype.lower()
     if args.error_folder and args.error_folder.is_dir():
-        output_err = Path(args.error_folder).joinpath(args.input_spectrum.name.replace(input_filetype, '.err'))
+        output_err = Path(args.error_folder).joinpath(args.input_spectrum.name)
     else:
         output_err = None
     # List of output spectra
@@ -68,7 +70,7 @@ def main():
         except Exception as e:
             if output_err:
                 with open(output_err, 'w') as w_err:
-                    w_err.write(repr(e))
+                    w_err.write("{}: {}".format(args.input_spectrum.name,repr(e)))
                 sys.exit(0)
             else:
                 raise Exception(e)
@@ -97,7 +99,7 @@ def main():
         except Exception as e:
             if output_err:
                 with open(output_err, 'w') as w_err:
-                    w_err.write(repr(e))
+                    w_err.write("{}: {}".format(args.input_spectrum.name,repr(e)))
                 sys.exit(0)
             else:
                 raise Exception(e)
@@ -126,7 +128,7 @@ def main():
         except Exception as e:
             if output_err:
                 with open(output_err, 'w') as w_err:
-                    w_err.write(repr(e))
+                    w_err.write("{}: {}".format(args.input_spectrum.name,repr(e)))
                 sys.exit(0)
             else:
                 raise Exception(e)
@@ -170,7 +172,7 @@ def main():
             except Exception as e:
                 if output_err:
                     with open(output_err, 'w') as w_err:
-                        w_err.write(repr(e))
+                        w_err.write("{}: {}".format(args.input_spectrum.name,repr(e)))
                     sys.exit(0)
                 else:
                     raise Exception(e)
@@ -217,7 +219,7 @@ def main():
             except Exception as e:
                 if output_err:
                     with open(output_err, 'w') as w_err:
-                        w_err.write(repr(e))
+                        w_err.write("{}: {}".format(args.input_spectrum.name,repr(e)))
                     sys.exit(0)
                 else:
                     raise Exception(e)
@@ -225,11 +227,12 @@ def main():
         if ms2plus_scan_idx < all_scan_idx:
             print("MS1s found in MGF file, proceed with caution!")
     else:
-        if args.suppress_errors:
-            print("{} has an unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
-            sys.exit(1)
+        if output_err:
+            with open(output_err, 'w') as w_err:
+                w_err.write("{}: Unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
+            sys.exit(0)
         else:
-            raise Exception("{} has an unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
+            raise Exception("{}: Unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
 
     with open(output, 'w') as f:
         r = csv.writer(f, delimiter = '\t')
