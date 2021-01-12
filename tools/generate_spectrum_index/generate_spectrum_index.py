@@ -12,7 +12,7 @@ def ProteoSAFePath(path_str):
     #https://github.com/CCMS-UCSD/ProteoSAFe-LiveSearch/blob/master/src/main/java/edu/ucsd/livesearch/util/Commons.java#L63-L64
     PLACEHOLDER_DELIMITER = 'X9ZxTU0xlREnVkmE'
     updated_path_str = path_str.replace(PLACEHOLDER_DELIMITER,'/')
-    return Path(updated_path)
+    return Path(updated_path_str)
 
 def arguments():
     parser = argparse.ArgumentParser(description='Generate index from spectrum file')
@@ -27,8 +27,8 @@ def arguments():
 
 def main():
     args = arguments()
-
-    input_suffixes = [suffix.lower() for suffix in ProteoSAFePath(args.input_spectrum.name).suffixes]
+    input_spectrum_expanded = ProteoSAFePath(args.input_spectrum.name)
+    input_suffixes = [suffix.lower() for suffix in input_spectrum_expanded.suffixes]
     if '.mzml' in input_suffixes:
         if '.gz' in input_suffixes:
             input_filetype = '.mzml.gz'
@@ -76,7 +76,7 @@ def main():
         except Exception as e:
             if output_err:
                 with open(output_err, 'w') as w_err:
-                    w_err.write("{}: {}".format(args.input_spectrum.name,repr(e)))
+                    w_err.write("{}: {}".format(input_spectrum_expanded.name,repr(e)))
                 sys.exit(0)
             else:
                 raise Exception(e)
@@ -105,7 +105,7 @@ def main():
         except Exception as e:
             if output_err:
                 with open(output_err, 'w') as w_err:
-                    w_err.write("{}: {}".format(args.input_spectrum.name,repr(e)))
+                    w_err.write("{}: {}".format(input_spectrum_expanded.name,repr(e)))
                 sys.exit(0)
             else:
                 raise Exception(e)
@@ -134,7 +134,7 @@ def main():
         except Exception as e:
             if output_err:
                 with open(output_err, 'w') as w_err:
-                    w_err.write("{}: {}".format(args.input_spectrum.name,repr(e)))
+                    w_err.write("{}: {}".format(input_spectrum_expanded.name,repr(e)))
                 sys.exit(0)
             else:
                 raise Exception(e)
@@ -178,7 +178,7 @@ def main():
             except Exception as e:
                 if output_err:
                     with open(output_err, 'w') as w_err:
-                        w_err.write("{}: {}".format(args.input_spectrum.name,repr(e)))
+                        w_err.write("{}: {}".format(input_spectrum_expanded.name,repr(e)))
                     sys.exit(0)
                 else:
                     raise Exception(e)
@@ -225,7 +225,7 @@ def main():
             except Exception as e:
                 if output_err:
                     with open(output_err, 'w') as w_err:
-                        w_err.write("{}: {}".format(args.input_spectrum.name,repr(e)))
+                        w_err.write("{}: {}".format(input_spectrum_expanded.name,repr(e)))
                     sys.exit(0)
                 else:
                     raise Exception(e)
@@ -235,10 +235,10 @@ def main():
     else:
         if output_err:
             with open(output_err, 'w') as w_err:
-                w_err.write("{}: Unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
+                w_err.write("{}: Unknown filetype ({}).".format(input_spectrum_expanded.name,input_filetype))
             sys.exit(0)
         else:
-            raise Exception("{}: Unknown filetype ({}).".format(args.input_spectrum.name,input_filetype))
+            raise Exception("{}: Unknown filetype ({}).".format(input_spectrum_expanded.name,input_filetype))
 
     with open(output, 'w') as f:
         r = csv.writer(f, delimiter = '\t')
