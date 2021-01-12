@@ -8,6 +8,12 @@ import gzip
 
 Spectrum = namedtuple('Spectrum', 'nativeid mslevel ms2plusindex')
 
+def ProteoSAFePath(path_str):
+    #https://github.com/CCMS-UCSD/ProteoSAFe-LiveSearch/blob/master/src/main/java/edu/ucsd/livesearch/util/Commons.java#L63-L64
+    PLACEHOLDER_DELIMITER = 'X9ZxTU0xlREnVkmE'
+    updated_path_str = path_str.replace(PLACEHOLDER_DELIMITER,'/')
+    return Path(updated_path)
+
 def arguments():
     parser = argparse.ArgumentParser(description='Generate index from spectrum file')
     parser.add_argument('-i','--input_spectrum', type = Path, help='Single spectrum file of types mzML, mzXML, or mgf.')
@@ -22,7 +28,7 @@ def arguments():
 def main():
     args = arguments()
 
-    input_suffixes = [suffix.lower() for suffix in args.input_spectrum.suffixes]
+    input_suffixes = [suffix.lower() for suffix in ProteoSAFePath(args.input_spectrum.name).suffixes]
     if '.mzml' in input_suffixes:
         if '.gz' in input_suffixes:
             input_filetype = '.mzml.gz'
@@ -41,8 +47,8 @@ def main():
     #Apache FilenameUtils.getBaseName method just takes off the
     #last extension so to match the downstream code,
     #we just remove the final suffix
-    
-    output = Path(args.output_folder).joinpath(args.input_spectrum.name.with_suffix('.scans'))
+
+    output = Path(args.output_folder).joinpath(args.input_spectrum.with_suffix('.scans').name)
     input_filetype = input_filetype.lower()
     if args.error_folder and args.error_folder.is_dir():
         output_err = Path(args.error_folder).joinpath(args.input_spectrum.name)
