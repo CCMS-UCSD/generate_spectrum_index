@@ -5,6 +5,9 @@ from csv import DictReader
 from collections import defaultdict
 import sys
 
+#https://github.com/CCMS-UCSD/ProteoSAFe-LiveSearch/blob/master/src/main/java/edu/ucsd/livesearch/util/Commons.java#L63-L64
+PLACEHOLDER_DELIMITER = 'X9ZxTU0xlREnVkmE'
+
 def arguments():
     parser = argparse.ArgumentParser(description='Demangle collection as aliases to folder')
     parser.add_argument('-p','--params', type = Path, help='ProteoSAFe params.xml')
@@ -24,7 +27,7 @@ def get_mangled_file_mapping(params):
     for mapping in all_mappings:
         splits = mapping.split("|")
         mangled_name = splits[0]
-        original_name = Path(splits[1])
+        original_name = Path(splits[1].replace('/',PLACEHOLDER_DELIMITER))
         mangled_mapping[mangled_name] = original_name
 
     return mangled_mapping
