@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<flow name="generate_spectrum_index">
+        <object     name="workflowParameters"/>
+        <collection name="inputspectra"/>
+
+        <action name="begin">
+                <output port="flowParams" object="workflowParameters"/>
+                <output port="spec"       collection="inputspectra"/>
+        </action>
+
+        <collection name="summary_stats"/>
+        <action name="extract_scans" multiplicity="multiple" type="parallel">
+                <input  port="workflowParameters"             object="workflowParameters"/>
+                <input  port="inputspectra"             collection="inputspectra" transformation="unfolding"/>
+                <output port="summary_stats"           collection="summary_stats"/>
+        </action>
+
+        <object name="condensed_stats"/>
+        <action name="format_stats">
+                <input  port="workflowParameters"             object="workflowParameters"/>
+                <input  port="summary_stats"             collection="summary_stats"/>
+                <output port="condensed_stats"           collection="condensed_stats"/>
+        </action>
+
+        <action name="end">
+                <input port="summary_stats"           collection="summary_stats"/>
+                <input port="condensed_stats"           collection="condensed_stats"/>
+        </action>
+</flow>

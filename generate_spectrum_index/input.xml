@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<interface id="generate_spectrum_index" version="1.2.8">
+        <workflow-id>GENERATE_SPECTRUM_INDEX</workflow-id>
+        <workflow-label>GENERATE_SPECTRUM_INDEX</workflow-label>
+
+        <!-- Parameter declarations -->
+        <parameters>
+                <!-- Universal parameters -->
+                <parameter name="desc" label="Description">
+                        <validator type="length" maximum="1000"/>
+                </parameter>
+                <parameter name="email" label="Email">
+                        <validator type="email"/>
+                </parameter>
+
+                <parameter name="spec_on_server" label="Spectrum Files (Required)">
+			<validator type="required"/>
+			<fileGenerator type="upload" purpose="spectrum" target="spec"/>
+		</parameter>
+        </parameters>
+
+        <block label="PlaceholderBlock">
+                 <row>
+			<cell>
+				<label>
+					<content parameter="spec_on_server"/>
+				</label>
+			</cell>
+			<cell colspan="3">
+				<module id="spec_on_server" type="fileSelector">
+					<property name="label">Spectrum Files</property>
+				</module>
+			</cell>
+		</row>
+        </block>
+
+
+</interface>

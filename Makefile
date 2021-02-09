@@ -1,6 +1,7 @@
 -include ../Makefile.credentials
 include ../Makefile.deploytemplate
 
+WORKFLOW_NAME=generate_spectrum_index
 TOOL_FOLDER_NAME=generate_spectrum_index
 WORKFLOW_VERSION=0.5
 WORKFLOW_LABEL="Spectrum Index Generation"

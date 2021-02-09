@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<binding>
+        <bind action="begin" type="download">
+                <url value="{livesearch.download}"/>
+                <query name="task" valueRef="@task" />
+                <query name="user" valueRef="@user"/>
+                <compression type="zip" />
+                <download port="flowParams" type="file">
+                        <query name="resource" value="params"/>
+                </download>
+                <downloadParams>
+                        <query name="resource" value="params"/>
+                </downloadParams>
+                
+		<download port="spec" type="folder">
+			<query name="resource" value="spec"/>
+		</download>
+        </bind>
+
+        <bind action="extract_scans" tool="extract_scans">
+                <inputAsRequirement port="inputspectra"       requirement="inputspectra"/>
+            <productionToOutput port="summary_stats" production="summary_stats"/>
+        </bind>
+
+        <bind action="format_stats" tool="format_stats">
+                <inputAsRequirement port="workflowParameters"       requirement="workflowParameters"/>
+                <inputAsRequirement port="summary_stats"       requirement="summary_stats"/>
+            <productionToOutput port="condensed_stats" production="condensed_stats"/>
+        </bind>
+
+        <bind action="end" type="upload">
+                <url value="{livesearch.upload}"/>
+                <query name="task" valueRef="@task"/>
+                <contentQuery name="content"/>
+                <compression type="zip"/>
+                <upload port="summary_stats" type="folder">
+                        <query name="resource" value="summary_stats"/>
+                </upload>
+                <upload port="condensed_stats" type="folder">
+                        <query name="resource" value="condensed_stats"/>
+                </upload>
+        </bind>
+</binding>

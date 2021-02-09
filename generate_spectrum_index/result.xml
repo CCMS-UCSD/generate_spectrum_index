@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<interface id="generate_spectrum_index">
+    <download>
+    </download>
+
+    <!-- View definitions -->
+    <view id="condensed_stats" label="All Spectra in Files">
+        <blockRef id="main" type="condensed_stats"/>
+    </view>
+
+    <!-- Block definitions -->
+    <block id="condensed_stats" type="table_ss">
+        <data>
+            <source type="file" name="condensed_stats/"/>
+            <parsers>
+                <parser type="tabular" />
+                <parser type="SQLite" />
+            </parsers>
+
+            <row>
+                <column type="text" field="proteosafe_filename" label="proteosafe_filename" width="12"/>
+                <column type="text" field="mslevel" label="mslevel" width="12"/>
+                <column type="text" field="identifier" label="identifier" width="12"/>
+                <column label="USI-Spectrum" type="genericurlgenerator" width="3"> \
+                    <parameter name="URLBASE" value="https://metabolomics-usi.ucsd.edu/spectrum/"/>\
+                    <parameter name="REQUESTPARAMETER=usi" value="[usi]"/>
+                    <parameter name="LABEL" value="Spectrum USI"/>
+                </column>
+            </row>
+        </data>
+
+    </block>
+</interface>
