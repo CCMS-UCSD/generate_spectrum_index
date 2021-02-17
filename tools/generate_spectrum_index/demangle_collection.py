@@ -59,8 +59,7 @@ def main():
             if args.preserve_suffix:
                 suffix = input_file.suffix
                 input_file_no_suffix = input_file.with_suffix('').name
-                output_file = demangled_mapping.get(input_file_no_suffix)
-                output_file = output_file.with_suffix(output_file.suffix + suffix)
+                output_file = demangled_mapping.get(input_file_no_suffix).with_suffix(suffix)
             else:
                 output_file = demangled_mapping.get(input_file.name)
         else:
