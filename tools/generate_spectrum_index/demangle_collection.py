@@ -13,6 +13,8 @@ def arguments():
     parser.add_argument('-p','--params', type = Path, help='ProteoSAFe params.xml')
     parser.add_argument('-i','--input_folder', type = Path, help='Input folder path')
     parser.add_argument('-o','--output_folder', type = Path, help='Output folder path')
+    parser.add_argument('-r','--reverse', dest='reverse', action='store_true', help='Flag to demangle file collection')
+    parser.add_argument('-s','--preserve_suffix', dest='preserve_suffix', action='store_true', help='Flag to save suffix from demangled file collection')
     if len(sys.argv) < 3:
         parser.print_help()
         sys.exit(1)
@@ -24,13 +26,14 @@ def read_params(input_file):
 def get_mangled_file_mapping(params):
     all_mappings = params["upload_file_mapping"]
     mangled_mapping = {}
+    demangled_mapping = {}
     for mapping in all_mappings:
         splits = mapping.split("|")
         mangled_name = splits[0]
-        original_name = Path(splits[1].replace('/',PLACEHOLDER_DELIMITER))
-        mangled_mapping[mangled_name] = original_name
-
-    return mangled_mapping
+        original_name = splits[1].replace('/',PLACEHOLDER_DELIMITER)
+        mangled_mapping[mangled_name] = Path(original_name)
+        demangled_mapping[original_name] = Path(mangled_name)
+    return mangled_mapping, demangled_mapping
 
 def parse_xml_file(input_file):
     with open(input_file) as f:
@@ -47,11 +50,22 @@ def parse_xml_file(input_file):
 
 def main():
     args = arguments()
-    file_mapping = read_params(args.params)
+    mangled_mapping, demangled_mapping = read_params(args.params)
 
-    for mangled in args.input_folder.glob('*'):
-        input_path = args.input_folder.joinpath(mangled.name).absolute()
-        output_file = file_mapping.get(mangled.name,mangled.name)
+    for input_file in args.input_folder.glob('*'):
+        input_path = args.input_folder.joinpath(input_file.name).absolute()
+
+        if args.reverse:
+            if args.preserve_suffix:
+                suffix = input_file.suffix
+                input_file_no_suffix = input_file.with_suffix('').name
+                output_file = demangled_mapping.get(input_file_no_suffix)
+                output_file = output_file.with_suffix(output_file.suffix + suffix)
+            else:
+                output_file = demangled_mapping.get(input_file.name)
+        else:
+            output_file = mangled_mapping.get(input_file.name)
+
         output_path = args.output_folder.joinpath(output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.symlink_to(input_path)

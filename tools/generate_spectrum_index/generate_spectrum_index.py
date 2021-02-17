@@ -48,7 +48,7 @@ def main():
     #last extension so to match the downstream code,
     #we just remove the final suffix
 
-    output = Path(args.output_folder).joinpath(args.input_spectrum.with_suffix('.scans').name)
+    output = Path(args.output_folder).joinpath(args.input_spectrum.with_suffix(args.input_spectrum.suffix + '.scans').name)
     input_filetype = input_filetype.lower()
     if args.error_folder and args.error_folder.is_dir():
         output_err = Path(args.error_folder).joinpath(args.input_spectrum.name)
@@ -189,7 +189,7 @@ def main():
         # try to parse this mgf file with the pyteomics library
         try:
             all_scan_idx = 0
-            with gzip.open(args.input_spectrum) as mgf_gz_file:
+            with gzip.open(args.input_spectrum, 'rt') as mgf_gz_file:
                 with mgf.read(mgf_gz_file) as reader:
                     for s in reader:
                         # Check for MSLEVEL but assume 2
@@ -214,7 +214,7 @@ def main():
         except:
             try:
                 ms2_count = 0
-                with gzip.open(args.input_spectrum) as mgf_gz_file:
+                with gzip.open(args.input_spectrum, 'rt') as mgf_gz_file:
                     for i,line in enumerate(mgf_gz_file):
                         if "BEGIN" in line:
                             ms2_count += 1
