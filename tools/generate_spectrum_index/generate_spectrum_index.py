@@ -15,9 +15,9 @@ def ProteoSAFePath(path_str):
     return Path(updated_path_str)
 
 def arguments():
-    parser = argparse.ArgumentParser(description='Generate index from spectrum file')
-    parser.add_argument('-i','--input_spectrum', type = Path, help='Single spectrum file of types mzML, mzXML, or mgf.')
-    parser.add_argument('-o','--output_folder', type = Path, help='Folder to write out tab-separated index file to write out')
+    parser = argparse.ArgumentParser(description='Generate index from spectrum file', exit_on_error=False)
+    parser.add_argument('-i','--input_spectrum', type = Path, help='Single spectrum file of types mzML, mzXML, or mgf.', required = True)
+    parser.add_argument('-o','--output_folder', type = Path, help='Folder to write out tab-separated index file to write out', required = True)
     parser.add_argument('-l','--default_ms_level', type = str, help='Default MSlevel', default='0')
     parser.add_argument('-e','--error_folder', type = Path, help='Write error file to this folder')
     if len(sys.argv) < 2:
@@ -26,7 +26,13 @@ def arguments():
     return parser.parse_args()
 
 def main():
-    args = arguments()
+    # don't fail on error, since it is likely to be run without inputs
+    try:
+        args = arguments()
+    except argparse.ArgumentError as e:
+        print(repr(e))
+        sys.exit(0)
+
     input_spectrum_expanded = ProteoSAFePath(args.input_spectrum.name)
     input_suffixes = [suffix.lower() for suffix in input_spectrum_expanded.suffixes]
     if '.mzml' in input_suffixes:
