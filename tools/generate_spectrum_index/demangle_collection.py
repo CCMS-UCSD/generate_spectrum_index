@@ -54,25 +54,24 @@ def main():
         print(repr(e))
         sys.exit(0)
 
-    if args.params and args.input_folder and args.input_folder.name != '':
-        mangled_mapping, demangled_mapping = read_params(args.params)
+    mangled_mapping, demangled_mapping = read_params(args.params)
 
-        for input_file in args.input_folder.glob('*'):
-            input_path = args.input_folder.joinpath(input_file.name).absolute()
+    for input_file in args.input_folder.glob('*'):
+        input_path = args.input_folder.joinpath(input_file.name).absolute()
 
-            if args.reverse:
-                if args.preserve_suffix:
-                    suffix = input_file.suffix
-                    input_file_no_suffix = input_file.with_suffix('').name
-                    output_file = demangled_mapping.get(input_file_no_suffix).with_suffix(suffix)
-                else:
-                    output_file = demangled_mapping.get(input_file.name)
+        if args.reverse:
+            if args.preserve_suffix:
+                suffix = input_file.suffix
+                input_file_no_suffix = input_file.with_suffix('').name
+                output_file = demangled_mapping.get(input_file_no_suffix).with_suffix(suffix)
             else:
-                output_file = mangled_mapping.get(input_file.name)
+                output_file = demangled_mapping.get(input_file.name)
+        else:
+            output_file = mangled_mapping.get(input_file.name)
 
-            output_path = args.output_folder.joinpath(output_file)
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            output_path.symlink_to(input_path)
+        output_path = args.output_folder.joinpath(output_file)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.symlink_to(input_path)
 
 if __name__ == "__main__":
     main()
