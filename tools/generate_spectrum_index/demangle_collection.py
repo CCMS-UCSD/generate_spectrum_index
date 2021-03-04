@@ -5,14 +5,11 @@ from csv import DictReader
 from collections import defaultdict
 import sys
 
-#https://github.com/CCMS-UCSD/ProteoSAFe-LiveSearch/blob/master/src/main/java/edu/ucsd/livesearch/util/Commons.java#L63-L64
-PLACEHOLDER_DELIMITER = 'X9ZxTU0xlREnVkmE'
-
 def arguments():
-    parser = argparse.ArgumentParser(description='Demangle collection as aliases to folder', exit_on_error=False)
-    parser.add_argument('-p','--params', type = Path, help='ProteoSAFe params.xml', required = True)
-    parser.add_argument('-i','--input_folder', type = Path, help='Input folder path', required = True)
-    parser.add_argument('-o','--output_folder', type = Path, help='Output folder path', required = True)
+    parser = argparse.ArgumentParser(description='Demangle collection as aliases to folder')
+    parser.add_argument('-p','--params', type = Path, help='ProteoSAFe params.xml')
+    parser.add_argument('-i','--input_folder', type = Path, help='Input folder path')
+    parser.add_argument('-o','--output_folder', type = Path, help='Output folder path')
     parser.add_argument('-r','--reverse', dest='reverse', action='store_true', help='Flag to demangle file collection')
     parser.add_argument('-s','--preserve_suffix', dest='preserve_suffix', action='store_true', help='Flag to save suffix from demangled file collection')
     return parser.parse_args()
@@ -27,7 +24,7 @@ def get_mangled_file_mapping(params):
     for mapping in all_mappings:
         splits = mapping.split("|")
         mangled_name = splits[0]
-        original_name = splits[1].replace('/',PLACEHOLDER_DELIMITER)
+        original_name = splits[1]
         mangled_mapping[mangled_name] = Path(original_name)
         demangled_mapping[original_name] = Path(mangled_name)
     return mangled_mapping, demangled_mapping
@@ -48,10 +45,10 @@ def parse_xml_file(input_file):
 def main():
 
     # don't fail on error, since it is likely to be run without inputs
-    try:
-        args = arguments()
-    except argparse.ArgumentError as e:
-        print(repr(e))
+    args = arguments()
+
+    if not (args.input_folder and args.output_folder and args.params):
+        print("Input folder, output folder, and params are required.")
         sys.exit(0)
 
     mangled_mapping, demangled_mapping = read_params(args.params)
