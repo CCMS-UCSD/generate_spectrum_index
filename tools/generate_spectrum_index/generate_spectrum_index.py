@@ -76,7 +76,7 @@ def main():
         if input_filetype == '.mzxml':
             try:
                 with open(input_spectrum, 'rb') as mzxml_file:
-                    with mzxml.read(mzxml_file) as reader:
+                    with mzxml.read(mzxml_file, huge_tree=True) as reader:
                         for s in reader:
                             # Always use scan= for nativeID for mzXML
                             spectra.append(Spectrum('scan={}'.format(s['num']),int(s['msLevel']),-1 if int(s['msLevel']) <= 1 else ms2plus_scan_idx))
@@ -93,12 +93,12 @@ def main():
         elif input_filetype == '.mzml':
             try:
                 with open(input_spectrum, 'rb') as mzml_file:
-                    mzml_object = mzml.read(mzml_file)
+                    mzml_object = mzml.read(mzml_file, huge_tree=True)
                     param_groups = {}
                     for ref in mzml_object.iterfind("referenceableParamGroupList/referenceableParamGroup"):
                         param_groups[ref['id']] = ref
                 with open(input_spectrum, 'rb') as mzml_file:
-                    with mzml.read(mzml_file) as reader:
+                    with mzml.read(mzml_file, huge_tree=True) as reader:
                         for s in reader:
                             ms_level = s.get('ms level')
                             if not ms_level:
@@ -122,12 +122,12 @@ def main():
         elif input_filetype == '.mzml.gz':
             try:
                 with gzip.open(input_spectrum, 'rb') as mzmlgz_file:
-                    mzml_object = mzml.read(mzmlgz_file)
+                    mzml_object = mzml.read(mzmlgz_file, huge_tree=True)
                     param_groups = {}
                     for ref in mzml_object.iterfind("referenceableParamGroupList/referenceableParamGroup"):
                         param_groups[ref['id']] = ref
                 with gzip.open(input_spectrum, 'rb') as mzmlgz_file:
-                    with mzml.read(mzmlgz_file) as reader:
+                    with mzml.read(mzmlgz_file, huge_tree=True) as reader:
                         for s in reader:
                             ms_level = s.get('ms level')
                             if not ms_level:
