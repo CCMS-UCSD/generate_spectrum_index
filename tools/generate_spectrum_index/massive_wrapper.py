@@ -50,7 +50,7 @@ def main():
             shutil.copy(cached_scans_file, str(output))
         else:
             print("No cached scans file cound be found for input spectrum file [" + input_spectrum  + "] - generating now.")
-            command = sys.executable + " " + GENERATE_SPECTRUM_INDEX_SCRIPT + " -i " + input_spectrum + " -o " + str(args.output_folder)
+            command = sys.executable + " \"" + GENERATE_SPECTRUM_INDEX_SCRIPT + "\" -i \"" + input_spectrum + "\" -o \"" + str(args.output_folder) + "\""
             if args.error_folder:
                 command += " -e " + str(args.error_folder)
             if args.default_ms_level:
